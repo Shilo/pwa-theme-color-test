@@ -10,10 +10,10 @@
 
     <!-- Theme Color and Color Scheme for Android Chrome
          The "color-scheme" meta tag ensures Chrome allows our custom dark theme color
-         instead of forcing a pure black (#000000) status bar. -->
+         instead of forcing a pure black (#000000) status bar. 
+         We use a SINGLE theme-color tag so JavaScript can dynamically change it without conflicts. -->
     <meta name="color-scheme" content="light dark">
-    <meta id="themeColorMetaLight" name="theme-color" media="(prefers-color-scheme: light)" content="#282c34">
-    <meta id="themeColorMetaDark" name="theme-color" media="(prefers-color-scheme: dark)" content="#282c34">
+    <meta id="themeColorMeta" name="theme-color" content="#282c34">
 
     <!-- iOS specific meta tags -->
     <meta name="mobile-web-app-capable" content="yes">
@@ -117,7 +117,7 @@
 <body>
     <div class="container">
         <div class="content">
-            <h1>Edge-to-Edge PWA - v7</h1>
+            <h1>Edge-to-Edge PWA - v8</h1>
             <p>This content respects the safe area insets.</p>
             <br>
             <p id="bgColorDisplay">Background: #282c34</p>
@@ -129,8 +129,7 @@
     <script>
         const themeToggleBtn = document.getElementById('themeToggleBtn');
         const bgColorDisplay = document.getElementById('bgColorDisplay');
-        const themeColorMetaLight = document.getElementById('themeColorMetaLight');
-        const themeColorMetaDark = document.getElementById('themeColorMetaDark');
+        const themeColorMeta = document.getElementById('themeColorMeta');
 
         // Define our theme colors
         const darkColor = '#282c34';
@@ -150,10 +149,10 @@
             // Update the display text for visual confirmation
             bgColorDisplay.textContent = `Background: ${targetColor}`;
 
-            // ⭐️ CRITICAL STEP: Update BOTH meta tags dynamically so 
-            // the mobile status/nav bar colors immediately follow the UI!
-            themeColorMetaLight.setAttribute('content', targetColor);
-            themeColorMetaDark.setAttribute('content', targetColor);
+            // Update the single meta tag dynamically
+            if (themeColorMeta) {
+                themeColorMeta.setAttribute('content', targetColor);
+            }
         });
     </script>
 
