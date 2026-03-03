@@ -3,7 +3,7 @@
   "short_name": "ThemeColorTest",
   "description": "A simple PWA for testing edge-to-edge safe area and transparent status/nav bars.",
   "start_url": ".",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#282c34",
   "theme_color": "#282c34",
   "icons": [
