@@ -10,11 +10,11 @@
 
     <!-- Theme Color for Android Chrome / iOS Safari 15+ 
          Using media queries prevents Android from forcing black bars in Dark Mode -->
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#282c34">
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#282c34">
+    <meta id="themeColorMetaLight" name="theme-color" media="(prefers-color-scheme: light)" content="#282c34">
+    <meta id="themeColorMetaDark" name="theme-color" media="(prefers-color-scheme: dark)" content="#282c34">
 
     <!-- iOS specific meta tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="icon.png">
 
@@ -30,6 +30,14 @@
         :root {
             --bg-color: #282c34;
             --text-color: #ffffff;
+            --border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Light Theme Variable Overrides */
+        body.light-theme {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --border-color: rgba(0, 0, 0, 0.2);
         }
 
         /* 
@@ -44,6 +52,7 @@
             height: 100vh;
             width: 100vw;
             overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* 
@@ -65,9 +74,10 @@
         .content {
             text-align: center;
             padding: 2rem;
-            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border: 2px dashed var(--border-color);
             border-radius: 12px;
             max-width: 90%;
+            transition: border-color 0.3s ease;
         }
 
         h1 {
@@ -78,7 +88,26 @@
         p {
             font-size: 1rem;
             line-height: 1.5;
-            color: #abb2bf;
+            color: var(--text-color);
+            opacity: 0.8;
+            transition: color 0.3s ease;
+        }
+
+        button {
+            margin-top: 1.5rem;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--bg-color);
+            background-color: var(--text-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.3s ease, color 0.3s ease;
+        }
+
+        button:active {
+            transform: scale(0.95);
         }
     </style>
 </head>
@@ -89,10 +118,42 @@
             <h1>Edge-to-Edge PWA</h1>
             <p>This content respects the safe area insets.</p>
             <br>
-            <p>Background: #282c34</p>
+            <p id="bgColorDisplay">Background: #282c34</p>
             <p>The system bars should blend cleanly.</p>
+            <button id="themeToggleBtn">Toggle Theme</button>
         </div>
     </div>
+
+    <script>
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const bgColorDisplay = document.getElementById('bgColorDisplay');
+        const themeColorMetaLight = document.getElementById('themeColorMetaLight');
+        const themeColorMetaDark = document.getElementById('themeColorMetaDark');
+
+        // Define our theme colors
+        const darkColor = '#282c34';
+        const lightColor = '#ffffff';
+
+        let isDarkTheme = true;
+
+        themeToggleBtn.addEventListener('click', () => {
+            isDarkTheme = !isDarkTheme;
+
+            // Toggle CSS class for styling the UI
+            document.body.classList.toggle('light-theme', !isDarkTheme);
+
+            // Set the new target hex color
+            const targetColor = isDarkTheme ? darkColor : lightColor;
+
+            // Update the display text for visual confirmation
+            bgColorDisplay.textContent = `Background: ${targetColor}`;
+
+            // ⭐️ CRITICAL STEP: Update BOTH meta tags dynamically so 
+            // the mobile status/nav bar colors immediately follow the UI!
+            themeColorMetaLight.setAttribute('content', targetColor);
+            themeColorMetaDark.setAttribute('content', targetColor);
+        });
+    </script>
 
     <!-- Minimal Service Worker Registration -->
     <script>
