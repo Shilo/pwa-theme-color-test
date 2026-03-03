@@ -13,7 +13,7 @@
          instead of forcing a pure black (#000000) status bar. 
          We use a SINGLE theme-color tag so JavaScript can dynamically change it without conflicts. -->
     <meta name="color-scheme" content="light dark">
-    <meta id="themeColorMeta" name="theme-color" media="(prefers-color-scheme: dark)" content="#282c34">
+    <meta id="themeColorMeta" name="theme-color" content="#282c34">
 
     <!-- iOS specific meta tags -->
     <meta name="mobile-web-app-capable" content="yes">
@@ -117,7 +117,7 @@
 <body>
     <div class="container">
         <div class="content">
-            <h1>Edge-to-Edge PWA - v10</h1>
+            <h1>Edge-to-Edge PWA - v11</h1>
             <p>This content respects the safe area insets.</p>
             <br>
             <p id="bgColorDisplay">Background: #282c34</p>
@@ -129,13 +129,35 @@
     <script>
         const themeToggleBtn = document.getElementById('themeToggleBtn');
         const bgColorDisplay = document.getElementById('bgColorDisplay');
-        const themeColorMeta = document.getElementById('themeColorMeta');
 
         // Define our theme colors
         const darkColor = '#282c34';
         const lightColor = '#ffffff';
 
         let isDarkTheme = true;
+
+        /**
+         * Forces Chrome on Android to update the status bar color by removing
+         * the old meta[name="theme-color"] and inserting a new one.
+         * Chrome's standalone PWA mode does not reliably react to setAttribute()
+         * on an existing element — a fresh DOM node is required.
+         *
+         * On iOS (black-translucent), the status bar is transparent and the body
+         * background shows through, so this meta tag is mainly for Android.
+         *
+         * NOTE: Android dark mode limitation (Chromium bug #40634649, open since 2019):
+         * When the device is in system dark mode, Chrome forcibly overrides
+         * theme-color to black. No web-platform workaround exists.
+         */
+        function setThemeColor(color) {
+            const existing = document.querySelector('meta[name="theme-color"]');
+            if (existing) existing.remove();
+
+            const meta = document.createElement('meta');
+            meta.name = 'theme-color';
+            meta.content = color;
+            document.head.appendChild(meta);
+        }
 
         themeToggleBtn.addEventListener('click', () => {
             isDarkTheme = !isDarkTheme;
@@ -149,10 +171,8 @@
             // Update the display text for visual confirmation
             bgColorDisplay.textContent = `Background: ${targetColor}`;
 
-            // Update the single meta tag dynamically
-            if (themeColorMeta) {
-                themeColorMeta.setAttribute('content', targetColor);
-            }
+            // Replace the meta tag to force Android Chrome to update the status bar
+            setThemeColor(targetColor);
         });
     </script>
 
