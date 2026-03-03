@@ -117,7 +117,7 @@
 <body>
     <div class="container">
         <div class="content">
-            <h1>Edge-to-Edge PWA - v8</h1>
+            <h1>Edge-to-Edge PWA - v9</h1>
             <p>This content respects the safe area insets.</p>
             <br>
             <p id="bgColorDisplay">Background: #282c34</p>
@@ -163,6 +163,24 @@
                 navigator.serviceWorker.register('sw.js')
                     .then(registration => {
                         console.log('ServiceWorker registered with scope:', registration.scope);
+
+                        // Force the browser to aggressively check for a new sw.js
+                        // on the server, bypassing its own 24-hour check timer.
+                        registration.update();
+
+                        // If an update is found and installed, force a reload so the user
+                        // immediately sees the newest version instead of the cached one.
+                        registration.onupdatefound = () => {
+                            const installingWorker = registration.installing;
+                            if (installingWorker) {
+                                installingWorker.onstatechange = () => {
+                                    if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                        console.log('New content is available; please refresh.');
+                                        window.location.reload();
+                                    }
+                                };
+                            }
+                        };
                     })
                     .catch(error => {
                         console.error('ServiceWorker registration failed:', error);
