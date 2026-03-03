@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pwa-theme-color-store-v6';
+const CACHE_NAME = 'pwa-theme-color-store-v7';
 const ASSETS = [
     './',
     'index.html',
@@ -36,6 +36,21 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
     e.respondWith(
-        caches.match(e.request).then((response) => response || fetch(e.request))
+        // Network-First Strategy
+        fetch(e.request)
+            .then((response) => {
+                // If we get a valid response, maybe update the cache for next time
+                if (response && response.status === 200 && response.type === 'basic') {
+                    const responseToCache = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(e.request, responseToCache);
+                    });
+                }
+                return response;
+            })
+            .catch(() => {
+                // If network fails (offline), fall back to cache
+                return caches.match(e.request);
+            })
     );
 });
