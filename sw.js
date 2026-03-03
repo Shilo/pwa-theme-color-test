@@ -2,8 +2,11 @@
 self.addEventListener('install', (e) => {
     e.waitUntil(
         caches.open('pwa-theme-color-store').then((cache) => cache.addAll([
-            '/',
-            '/index.html',
+            './',
+            'index.html',
+            'manifest.json',
+            'icon.png',
+            'icon-192.png'
         ])),
     );
 });
