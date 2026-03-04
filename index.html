@@ -8,14 +8,53 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
 
-    <!-- Theme Color and Color Scheme for Android Chrome
-         The "color-scheme" meta tag ensures Chrome allows our custom dark theme color
-         instead of forcing a pure black (#000000) status bar. 
-         We use a SINGLE theme-color tag so JavaScript can dynamically change it without conflicts. -->
-    <meta name="color-scheme" content="light dark">
-    <meta id="themeColorMeta" name="theme-color" content="#282c34">
+    <!-- Theme Color — Status Bar Coloring
 
-    <!-- iOS specific meta tags -->
+         Android (Chrome standalone PWA):
+           - The meta theme-color controls the status bar color at runtime.
+           - Dynamic updates require removing and re-inserting the meta tag;
+             setAttribute() alone is ignored by Chrome in standalone mode.
+           - CAVEAT: When the device is in system dark mode, Chrome forcibly
+             overrides theme-color to pure black (#000000) regardless of what
+             we set here. This is an open Chromium bug (since 2019)
+             with no web-platform workaround.
+             https://issues.chromium.org/issues/40634649
+
+         iOS (Safari standalone PWA):
+           - The "black-translucent" status bar style (below) makes the status
+             bar transparent, so the body's background-color shows through.
+             The theme-color meta tag is therefore secondary on iOS.
+           - CAVEAT (iOS 26+): Safari ignores the theme-color meta tag entirely.
+             It derives the bar color from the page's background-color automatically.
+             This means dynamic JS updates to the meta tag have zero effect —
+             but because black-translucent already makes the bar transparent,
+             our CSS background-color change is all that's needed.
+
+         Samsung Internet:
+           - Fully supports meta theme-color including dynamic updates.
+           - No known dark-mode override issue like Chrome.
+           - Uses the Chromium engine but has its own UI chrome handling.
+
+         Browser support for meta theme-color (https://caniuse.com/?search=meta+theme-color):
+           - Chrome 145+ Android: Partial — does not apply the color on devices
+             with native dark mode unless it's an installed PWA or TWA.
+           - Safari/iOS 26.4+: "Supported" but does not actually use the color
+             anywhere (transparent status bar via black-translucent still works).
+           - Samsung Internet 29: Fully supported.
+
+         color-scheme "light dark" tells the browser this page handles both
+         schemes (affects scrollbars, form controls, etc.) but does NOT
+         prevent Chrome's dark-mode status bar override. -->
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#282c34">
+
+    <!-- iOS standalone PWA meta tags
+         NOTE: apple-mobile-web-app-capable is deprecated in favor of the standard
+         mobile-web-app-capable. However, removing the apple- prefix can break
+         splash screen behavior on some iOS versions. We use the standard tag here
+         and rely on the manifest's "display": "standalone" for installation.
+         The apple-mobile-web-app-status-bar-style tag still requires the apple-
+         prefix as there is no standard equivalent. -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="icon.png">
@@ -149,7 +188,7 @@
          * When the device is in system dark mode, Chrome forcibly overrides
          * theme-color to black. No web-platform workaround exists.
          */
-        function setThemeColor(color) {
+        function setBrowserThemeColor(color) {
             const existing = document.querySelector('meta[name="theme-color"]');
             if (existing) existing.remove();
 
@@ -172,7 +211,7 @@
             bgColorDisplay.textContent = `Background: ${targetColor}`;
 
             // Replace the meta tag to force Android Chrome to update the status bar
-            setThemeColor(targetColor);
+            setBrowserThemeColor(targetColor);
         });
     </script>
 
