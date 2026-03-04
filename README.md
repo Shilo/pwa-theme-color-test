@@ -2,6 +2,13 @@
 
 A minimal PWA for testing edge-to-edge status bar coloring on Android and iOS.
 
+## AI Skill Usage
+
+This project includes an AI skill (`pwa-theme-color/SKILL.md`) designed to help AI coding assistants (like Claude Code, Codex, Cursor, Antigravity, etc.) automatically fix or add status bar and theme-color support to web apps and PWAs.
+
+To use the skill, simply reference the file and ask your AI assistant to apply it. For example:
+> "@pwa-theme-color/SKILL.md please apply these instructions to my project"
+
 ## Usage
 
 ### HTML meta tags
