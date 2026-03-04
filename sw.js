@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pwa-theme-color-store-v11';
+const CACHE_NAME = 'pwa-theme-color-store-v12';
 const ASSETS = [
     './',
     'index.html',
