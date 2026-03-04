@@ -3,10 +3,11 @@ name: pwa-theme-color
 description: >
   Add or fix status bar / theme-color support for web apps and PWAs. Use this
   skill whenever the user mentions theme-color, status bar color, PWA status bar,
-  browser chrome color, or wants the status bar to match their app's background.
-  Also use when adding PWA support and the project has a manifest.json or the user
-  wants to install the app to a home screen. Use this even if the user just says
-  "the status bar doesn't match" or "fix the bar color on mobile".
+  browser chrome color, safe area insets, content behind the notch, or wants the
+  status bar to match their app's background. Also use when adding PWA support
+  and the project has a manifest.json or the user wants to install the app to a
+  home screen. Use this even if the user just says "the status bar doesn't match"
+  or "fix the bar color on mobile".
 ---
 
 # PWA Theme Color — Status Bar Coloring
@@ -23,9 +24,11 @@ Before touching any code, understand how the project handles theming today.
 
 Search for these in the project:
 - `<meta name="theme-color"` in HTML
+- `<link rel="manifest"` in HTML (and the manifest file itself)
 - `theme_color` in manifest.json
 - `apple-mobile-web-app-status-bar-style` in HTML
 - Any JavaScript that sets `theme-color` dynamically
+- Service worker registration (required for PWA installability)
 
 ### 2. Identify the theming mechanism
 
@@ -66,11 +69,16 @@ Add these to `<head>`, before any scripts:
 
 Replace `THE_BG_COLOR` with the project's primary background color.
 
+Note: `color-scheme` tells the browser the page handles both light and dark
+schemes. This affects scrollbars, form controls, and default colors — but it
+does NOT prevent Chrome's dark-mode status bar override (see Phase 4).
+
 ### iOS standalone PWA meta tags
 
 ```html
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon.png">
 ```
 
 `black-translucent` makes the status bar transparent on iOS so the page's
@@ -80,20 +88,47 @@ status bar to any background color on iOS.
 `viewport-fit=cover` (in the viewport meta tag above) is required for content
 to extend behind the status bar.
 
-### manifest.json
+`apple-touch-icon` provides the home screen icon on iOS. Point it at a
+192x192 or larger PNG.
 
-Ensure the manifest includes `theme_color` and `background_color`:
+### Manifest link and file
+
+Ensure the HTML `<head>` links to the manifest:
+
+```html
+<link rel="manifest" href="manifest.json">
+```
+
+Ensure the manifest includes `display`, `theme_color`, and `background_color`:
 
 ```json
 {
+  "name": "My App",
+  "short_name": "MyApp",
+  "display": "standalone",
   "theme_color": "THE_BG_COLOR",
-  "background_color": "THE_BG_COLOR"
+  "background_color": "THE_BG_COLOR",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png" }
+  ]
 }
 ```
 
-`theme_color` controls the splash screen status bar color before the HTML loads.
-`background_color` controls the splash screen background. Set both to the same
-primary background color.
+- `display: standalone` is required for the PWA to run as a standalone app
+  (without browser UI). Without it, theme-color and status bar behavior will
+  not apply correctly.
+- `theme_color` controls the splash screen status bar color before the HTML
+  loads.
+- `background_color` controls the splash screen background.
+- Set both to the same primary background color.
+
+### Service worker
+
+A service worker is required for PWA installability on most platforms. If the
+project doesn't have one, it needs at minimum a basic `sw.js` with install,
+activate, and fetch handlers. This is outside the scope of this skill, but
+verify one exists before considering the setup complete.
 
 ### CSS
 
@@ -128,9 +163,11 @@ static color, skip to Phase 4.
 
 ### The `setBrowserThemeColor()` pattern
 
-Chrome on Android does not reliably update the status bar when you call
-`setAttribute('content', newColor)` on an existing `<meta name="theme-color">`
-element. The workaround is to remove the old meta tag and create a new one:
+Chrome on Android's standalone PWA mode does not reliably update the status bar
+when you call `setAttribute('content', newColor)` on an existing
+`<meta name="theme-color">` element. This is specific to installed PWAs running
+in standalone mode — regular browser tabs may behave differently. The workaround
+is to remove the old meta tag and create a new one:
 
 ```js
 function setBrowserThemeColor(color) {
@@ -178,8 +215,14 @@ theme-color to pure black (`#000000`), ignoring the meta tag.
 - **Filed**: 2019, still open
 - **No web-platform workaround exists**
 
-`<meta name="color-scheme">`, media-query variants, and dynamic JS updates all
-fail to override Chrome's forced black in system dark mode.
+`<meta name="color-scheme">`, media-query variants on `theme-color`, and
+dynamic JS updates all fail to override Chrome's forced black in system dark
+mode. The `color-scheme` meta tag does NOT prevent this.
+
+Chrome 145+ marks theme-color as "partial" support: the color is not applied on
+devices with native dark mode enabled unless the site is running as an installed
+PWA or Trusted Web Activity (TWA). In regular browser tabs with dark mode on,
+the meta tag is ignored entirely.
 
 ### iOS Safari 26+: theme-color meta tag ignored
 
@@ -197,6 +240,8 @@ transparent and the body background shows through.
 - Removing the `apple-` prefix may break splash screens on some iOS versions.
 - `apple-mobile-web-app-status-bar-style` has no standard equivalent and still
   requires the `apple-` prefix for `black-translucent`.
+- Conversely, using the old `apple-` prefixed capable tag can cause installation
+  issues where the app opens as a browser tab instead of standalone.
 
 If splash screens break, add the `apple-` prefixed capable tag back as a
 fallback alongside the standard one.
@@ -223,12 +268,16 @@ Reference: https://caniuse.com/?search=meta+theme-color
 
 After implementation, confirm:
 
+- [ ] `<link rel="manifest" href="manifest.json">` is in `<head>`
 - [ ] Meta tags are in `<head>` before any `<script>` tags
 - [ ] `viewport` meta includes `viewport-fit=cover`
 - [ ] `<meta name="theme-color">` value matches the primary background color
+- [ ] manifest.json has `"display": "standalone"`
 - [ ] manifest.json has `theme_color` and `background_color` set to the primary background
+- [ ] `<link rel="apple-touch-icon">` points to a valid icon
 - [ ] `html` and `body` both have `background-color` set in CSS
 - [ ] Main content container uses `env(safe-area-inset-*)` padding
+- [ ] A service worker is registered (required for PWA installability)
 - [ ] If dynamic theming: `setBrowserThemeColor()` is called on every theme change
 - [ ] If dynamic theming: body `background-color` also updates (needed for iOS)
 - [ ] Code comments document the Android dark mode Chromium bug and iOS 26+ caveat
