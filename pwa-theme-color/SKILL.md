@@ -206,6 +206,10 @@ Document these as code comments near the theme-color meta tag or the
 `setBrowserThemeColor()` function so future maintainers understand the
 constraints.
 
+### PWA Re-installation Required
+
+When changes are made to the `manifest.json` (like `theme_color` or `background_color`) or PWA-related meta tags, these updates often do not instantly propagate to already-installed PWAs. To ensure that a changed manifest or meta tag fully takes effect, the PWA must be fully uninstalled from the device and re-installed.
+
 ### Android Chrome: Dark mode forces black status bar
 
 When the device is in system dark mode, Chrome forcibly overrides the
@@ -223,6 +227,8 @@ Chrome 145+ marks theme-color as "partial" support: the color is not applied on
 devices with native dark mode enabled unless the site is running as an installed
 PWA or Trusted Web Activity (TWA). In regular browser tabs with dark mode on,
 the meta tag is ignored entirely.
+
+**Note**: While Android dark mode may correctly apply the `theme-color` for installed PWAs on the Google Chrome browser, other Chromium-based browsers (like Brave) may still force the black status bar.
 
 ### iOS Safari 26+: theme-color meta tag ignored
 

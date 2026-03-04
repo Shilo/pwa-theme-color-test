@@ -91,6 +91,10 @@ Samsung Internet fully supports `<meta name="theme-color">` including dynamic up
 
 ## Known Limitations
 
+### PWA Re-installation Required
+
+When changes are made to the `manifest.json` (like `theme_color` or `background_color`) or PWA-related meta tags, these updates often do not automatically apply to users who have already installed the PWA. To ensure that a changed manifest or meta tag fully takes effect, the PWA must be fully uninstalled from the device and re-installed.
+
 ### Android Chrome: Dark mode forces black status bar
 
 **When the Android device is in system dark mode, Chrome forces the status bar
@@ -104,6 +108,8 @@ This is a confirmed, long-standing Chromium bug:
 There is no web-platform workaround. The `<meta name="color-scheme">` tag,
 media-query variants on `theme-color`, and dynamic JavaScript updates all fail
 to override Chrome's forced black in system dark mode.
+
+**Note**: While recent versions of the Google Chrome browser may allow the `theme-color` to work for installed PWAs in dark mode, other Chromium-based browsers (like Brave) still force the black status bar.
 
 ### iOS: `apple-mobile-web-app-capable` is deprecated
 
