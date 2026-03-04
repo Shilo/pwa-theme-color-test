@@ -10,6 +10,12 @@
 
     <!-- Theme Color — Status Bar Coloring
 
+         PWA Re-installation Required:
+           Changes to manifest.json (theme_color, background_color) or
+           PWA-related meta tags often do not propagate to already-installed
+           PWAs. To ensure changes fully take effect, the PWA must be
+           uninstalled from the device and re-installed.
+
          Android (Chrome standalone PWA):
            - The meta theme-color controls the status bar color at runtime.
            - Dynamic updates require removing and re-inserting the meta tag;
@@ -19,6 +25,9 @@
              we set here. This is an open Chromium bug (since 2019)
              with no web-platform workaround.
              https://issues.chromium.org/issues/40634649
+           - NOTE: While Android dark mode may correctly apply theme-color for
+             installed PWAs on Google Chrome, other Chromium-based browsers
+             (like Brave) may still force the black status bar.
 
          iOS (Safari standalone PWA):
            - The "black-translucent" status bar style (below) makes the status
